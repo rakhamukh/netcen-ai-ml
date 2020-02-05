@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <script defer src="{{ HTML::script('face-api.min.js') }}"></script>
-  <script defer src="{{ HTML::script('script.js') }}"></script>
+  <script defer src="{{ asset('face-api.min.js') }}"></script>
+  <script defer src="{{ asset('script.js') }}"></script>
   <title>Face Recognition</title>
   <style>
     body {
