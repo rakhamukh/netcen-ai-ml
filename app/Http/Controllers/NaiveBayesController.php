@@ -8,9 +8,11 @@ use Phpml\Classification\NaiveBayes;
 
 class NaiveBayesController extends Controller
 {
-    public function index() {
+    public function index(Request $request) {
         // READ DATA TRAIN
-        $ftrain = fopen("train.csv", "r");
+        $filenameTrain = $request->file('train')->getClientOriginalName();
+        $request->file('train')->move(public_path('/'), $filenameTrain);
+        $ftrain = fopen($filenameTrain, "r");
         $samples = [];
         $labels = [];
         while (!feof($ftrain)) {
@@ -31,7 +33,9 @@ class NaiveBayesController extends Controller
         $classifier->train($samples, $labels);
 
         // READ DATA TEST
-        $ftest = fopen("test.csv", "r");
+        $filenameTest = $request->file('test')->getClientOriginalName();
+        $request->file('test')->move(public_path('/'), $filenameTest);
+        $ftest = fopen($filenameTest, "r");
         $tests = [];
         while (!feof($ftest)) {
             $test = fgetcsv($ftest);
