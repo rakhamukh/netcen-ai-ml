@@ -1,6 +1,4 @@
 <?php
 
-Route::get('/', function() {
-    return view('main');
-});
-Route::post('exec', 'NaiveBayesController@index');
+Route::get('/', 'NaiveBayesController@index');
+Route::post('exec', 'NaiveBayesController@exec');

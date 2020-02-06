@@ -6,9 +6,12 @@ use Illuminate\Http\Request;
 
 use Phpml\Classification\NaiveBayes;
 
-class NaiveBayesController extends Controller
-{
-    public function index(Request $request) {
+class NaiveBayesController extends Controller {
+    public function index() {
+        return view('main');
+    }
+
+    public function exec(Request $request) {
         // READ DATA TRAIN
         $filenameTrain = $request->file('train')->getClientOriginalName();
         $request->file('train')->move(public_path('/'), $filenameTrain);
@@ -39,7 +42,6 @@ class NaiveBayesController extends Controller
         $tests = [];
         while (!feof($ftest)) {
             $test = fgetcsv($ftest);
-            array_shift($test);
             array_pop($test);
             array_push($tests, $test);
         }
@@ -48,9 +50,17 @@ class NaiveBayesController extends Controller
         // print_r($tests[0]);
 
         // CLASSIFICATION
+        $data = [];
         foreach($tests as $test) {
-            echo $classifier->predict($test);
-            echo "<br>";
+            $id = array_shift($test);
+            array_push($data, [
+                'id' => $id,
+                'result' => $classifier->predict($test),
+            ]);
         }
+
+        return view('main', [
+            'data' => $data
+        ]);
     }
 }
