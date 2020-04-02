@@ -63,4 +63,51 @@ class NaiveBayesController extends Controller {
             'data' => $data
         ]);
     }
+
+    public function execTrain(Request $request) {
+        // READ DATA TRAIN
+        $filenameTrain = $request->file('train')->getClientOriginalName();
+        $request->file('train')->move(public_path('/'), $filenameTrain);
+        $ftrain = fopen($filenameTrain, "r");
+        $samples = [];
+        $labels = [];
+        $column = [];
+        while (!feof($ftrain)) {
+            $sample = fgetcsv($ftrain);
+            array_shift($sample);
+            $label = array_pop($sample);
+            array_push($samples, $sample);
+            array_push($labels, $label);
+
+            foreach ($sample as $key => $value) {
+                if (!isset($column[$key])) {
+                    $column[$key] = [];
+                } else if (!in_array($value, $column[$key])) {
+                    array_push($column[$key], $value);
+                }
+            }
+        }
+        fclose($ftrain);
+        array_shift($samples);
+        array_shift($labels);
+        // var_dump($column);
+        
+        $classifier = new NaiveBayes();
+        $classifier->train($samples, $labels);
+
+        $request->session()->put('classifier', $classifier);
+
+        return view('exec', [
+            'columns' => $column,
+        ]);
+    }
+
+    public function execTest(Request $request) {
+        $classifier = $request->session()->get('classifier');
+        $result = $classifier->predict($request->all());
+
+        return view('result', [
+            'result' => $result,
+        ]);
+    }
 }
