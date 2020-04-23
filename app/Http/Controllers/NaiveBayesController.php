@@ -11,58 +11,58 @@ class NaiveBayesController extends Controller {
         return view('main');
     }
 
-    public function exec(Request $request) {
-        // READ DATA TRAIN
-        $filenameTrain = $request->file('train')->getClientOriginalName();
-        $request->file('train')->move(public_path('/'), $filenameTrain);
-        $ftrain = fopen($filenameTrain, "r");
-        $samples = [];
-        $labels = [];
-        while (!feof($ftrain)) {
-            $sample = fgetcsv($ftrain);
-            array_shift($sample);
-            $label = array_pop($sample);
-            array_push($samples, $sample);
-            array_push($labels, $label);
-        }
-        fclose($ftrain);
-        array_shift($samples);
-        array_shift($labels);
-        // print_r($samples[0]);
-        // print_r($labels[0]);
+    // public function exec(Request $request) {
+    //     // READ DATA TRAIN
+    //     $filenameTrain = $request->file('train')->getClientOriginalName();
+    //     $request->file('train')->move(public_path('/'), $filenameTrain);
+    //     $ftrain = fopen($filenameTrain, "r");
+    //     $samples = [];
+    //     $labels = [];
+    //     while (!feof($ftrain)) {
+    //         $sample = fgetcsv($ftrain);
+    //         array_shift($sample);
+    //         $label = array_pop($sample);
+    //         array_push($samples, $sample);
+    //         array_push($labels, $label);
+    //     }
+    //     fclose($ftrain);
+    //     array_shift($samples);
+    //     array_shift($labels);
+    //     // print_r($samples[0]);
+    //     // print_r($labels[0]);
 
-        // NAIVE BAYES TRAIN
-        $classifier = new NaiveBayes();
-        $classifier->train($samples, $labels);
+    //     // NAIVE BAYES TRAIN
+    //     $classifier = new NaiveBayes();
+    //     $classifier->train($samples, $labels);
 
-        // READ DATA TEST
-        $filenameTest = $request->file('test')->getClientOriginalName();
-        $request->file('test')->move(public_path('/'), $filenameTest);
-        $ftest = fopen($filenameTest, "r");
-        $tests = [];
-        while (!feof($ftest)) {
-            $test = fgetcsv($ftest);
-            array_pop($test);
-            array_push($tests, $test);
-        }
-        fclose($ftest);
-        array_shift($tests);
-        // print_r($tests[0]);
+    //     // READ DATA TEST
+    //     $filenameTest = $request->file('test')->getClientOriginalName();
+    //     $request->file('test')->move(public_path('/'), $filenameTest);
+    //     $ftest = fopen($filenameTest, "r");
+    //     $tests = [];
+    //     while (!feof($ftest)) {
+    //         $test = fgetcsv($ftest);
+    //         array_pop($test);
+    //         array_push($tests, $test);
+    //     }
+    //     fclose($ftest);
+    //     array_shift($tests);
+    //     // print_r($tests[0]);
 
-        // CLASSIFICATION
-        $data = [];
-        foreach($tests as $test) {
-            $id = array_shift($test);
-            array_push($data, [
-                'id' => $id,
-                'result' => $classifier->predict($test),
-            ]);
-        }
+    //     // CLASSIFICATION
+    //     $data = [];
+    //     foreach($tests as $test) {
+    //         $id = array_shift($test);
+    //         array_push($data, [
+    //             'id' => $id,
+    //             'result' => $classifier->predict($test),
+    //         ]);
+    //     }
 
-        return view('main', [
-            'data' => $data
-        ]);
-    }
+    //     return view('main', [
+    //         'data' => $data
+    //     ]);
+    // }
 
     public function execTrain(Request $request) {
         // READ DATA TRAIN
@@ -72,6 +72,7 @@ class NaiveBayesController extends Controller {
         $samples = [];
         $labels = [];
         $column = [];
+        $columnName = [];
         while (!feof($ftrain)) {
             $sample = fgetcsv($ftrain);
             array_shift($sample);
@@ -82,6 +83,7 @@ class NaiveBayesController extends Controller {
             foreach ($sample as $key => $value) {
                 if (!isset($column[$key])) {
                     $column[$key] = [];
+                    array_push($columnName, $value);
                 } else if (!in_array($value, $column[$key])) {
                     array_push($column[$key], $value);
                 }
@@ -91,6 +93,8 @@ class NaiveBayesController extends Controller {
         array_shift($samples);
         array_shift($labels);
         // var_dump($column);
+
+        // return ;
         
         $classifier = new NaiveBayes();
         $classifier->train($samples, $labels);
@@ -98,7 +102,7 @@ class NaiveBayesController extends Controller {
         $request->session()->put('classifier', $classifier);
 
         return view('exec', [
-            'columns' => $column,
+            'columns' => array_combine($columnName, $column),
         ]);
     }
 
